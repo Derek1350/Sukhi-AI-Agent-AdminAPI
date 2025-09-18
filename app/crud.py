@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas, security
 
 # ==================================
-# Admin CRUD Functions
+# Admin CRUD Functions (No changes)
 # ==================================
 
 def get_admin_by_username(db: Session, username: str):
@@ -19,33 +19,46 @@ def create_admin(db: Session, admin: schemas.AdminCreate):
     return db_admin
 
 # ==================================
-# Sukhi CRUD Functions
+# Agent CRUD Functions (Replaces Sukhi functions)
 # ==================================
 
-def get_sukhi_profile(db: Session):
-    """
-    Fetches Sukhi's profile. If it doesn't exist, it creates a default one.
-    """
-    sukhi_profile = db.query(models.Sukhi).filter(models.Sukhi.id == 1).first()
-    if not sukhi_profile:
-        sukhi_profile = models.Sukhi(id=1, name="Sukhi", about="")
-        db.add(sukhi_profile)
-        db.commit()
-        db.refresh(sukhi_profile)
-    return sukhi_profile
-
-def update_sukhi_profile(db: Session, sukhi_update: schemas.SukhiUpdate):
-    """Updates Sukhi's profile with new data."""
-    sukhi_profile = get_sukhi_profile(db)
-    update_data = sukhi_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(sukhi_profile, key, value)
+def create_agent(db: Session, agent: schemas.AgentCreate):
+    """Creates a new AI Agent with a custom string ID."""
+    db_agent = models.Agent(**agent.model_dump())
+    db.add(db_agent)
     db.commit()
-    db.refresh(sukhi_profile)
-    return sukhi_profile
+    db.refresh(db_agent)
+    return db_agent
+
+def get_agent(db: Session, agent_id: str):
+    """Fetches a single agent by its custom string ID."""
+    return db.query(models.Agent).filter(models.Agent.id == agent_id).first()
+
+def get_agents(db: Session, skip: int = 0, limit: int = 100):
+    """Fetches a list of all agents with pagination."""
+    return db.query(models.Agent).offset(skip).limit(limit).all()
+
+def update_agent(db: Session, agent_id: str, agent_update: schemas.AgentUpdate):
+    """Updates an existing agent's details."""
+    db_agent = get_agent(db, agent_id)
+    if db_agent:
+        update_data = agent_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_agent, key, value)
+        db.commit()
+        db.refresh(db_agent)
+    return db_agent
+
+def delete_agent(db: Session, agent_id: str):
+    """Deletes an agent."""
+    db_agent = get_agent(db, agent_id)
+    if db_agent:
+        db.delete(db_agent)
+        db.commit()
+    return db_agent
 
 # ==================================
-# Prompt CRUD Functions
+# Prompt CRUD Functions (No changes)
 # ==================================
 
 def get_prompt(db: Session, prompt_id: int):
@@ -84,27 +97,28 @@ def delete_prompt(db: Session, prompt_id: int):
     return db_prompt
 
 # ==================================
-# Prompt Assignment Functions
+# Prompt Assignment Functions (Updated for Agents)
 # ==================================
 
-def assign_prompt_to_sukhi(db: Session, prompt_id: int):
-    """Assigns an existing prompt to Sukhi's profile."""
-    sukhi_profile = get_sukhi_profile(db)
+def assign_prompt_to_agent(db: Session, agent_id: str, prompt_id: int):
+    """Assigns an existing prompt to a specific agent."""
+    agent = get_agent(db, agent_id)
     prompt_to_assign = get_prompt(db, prompt_id)
     
-    if prompt_to_assign and prompt_to_assign not in sukhi_profile.prompts:
-        sukhi_profile.prompts.append(prompt_to_assign)
+    if agent and prompt_to_assign and prompt_to_assign not in agent.prompts:
+        agent.prompts.append(prompt_to_assign)
         db.commit()
-        db.refresh(sukhi_profile)
-    return sukhi_profile
+        db.refresh(agent)
+    return agent
 
-def remove_prompt_from_sukhi(db: Session, prompt_id: int):
-    """Removes a prompt assignment from Sukhi's profile."""
-    sukhi_profile = get_sukhi_profile(db)
+def remove_prompt_from_agent(db: Session, agent_id: str, prompt_id: int):
+    """Removes a prompt assignment from a specific agent."""
+    agent = get_agent(db, agent_id)
     prompt_to_remove = get_prompt(db, prompt_id)
 
-    if prompt_to_remove and prompt_to_remove in sukhi_profile.prompts:
-        sukhi_profile.prompts.remove(prompt_to_remove)
+    if agent and prompt_to_remove and prompt_to_remove in agent.prompts:
+        agent.prompts.remove(prompt_to_remove)
         db.commit()
-        db.refresh(sukhi_profile)
-    return sukhi_profile
+        db.refresh(agent)
+    return agent
+

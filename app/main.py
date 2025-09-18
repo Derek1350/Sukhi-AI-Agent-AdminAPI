@@ -3,25 +3,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine
 from . import models
-from .routers import auth, prompts, sukhi
+# Updated import: agents is now included, sukhi is removed
+from .routers import auth, prompts, agents
 
-# This command creates all the database tables defined in models.py
-# It will not recreate tables that already exist.
+# This command creates/updates all database tables defined in models.py
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Sukhi Admin Backend",
-    description="API for managing the Sukhi AI Agent, its profile, and its prompts.",
-    version="1.0.0",
+    title="Sukhi Multi-Agent Admin Backend",
+    description="API for managing multiple AI Agents, their profiles, and their prompts.",
+    version="2.0.0", # Version updated to reflect major refactor
 )
 
 # CORS (Cross-Origin Resource Sharing) Middleware
-# This allows your frontend application to make requests to this backend.
-# You can restrict the origins for production environments.
 origins = [
     "*", # For development, allow all origins.
-    # "http://localhost:3000", # Example for a React frontend
-    # "https://your-frontend-domain.com",
 ]
 
 app.add_middleware(
@@ -35,9 +31,10 @@ app.add_middleware(
 # Include the API routers from the other files
 app.include_router(auth.router)
 app.include_router(prompts.router)
-app.include_router(sukhi.router)
+app.include_router(agents.router) # <-- Using the new agents router
 
 @app.get("/", tags=["Root"])
 def read_root():
     """A simple root endpoint to confirm the API is running."""
-    return {"message": "Welcome to the Sukhi Admin Backend API!"}
+    return {"message": "Welcome to the Sukhi Multi-Agent Admin Backend API!"}
+
