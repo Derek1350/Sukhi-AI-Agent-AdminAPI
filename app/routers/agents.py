@@ -104,7 +104,7 @@ def delete_existing_agent(agent_id: str, db: Session = Depends(get_db)):
     return db_agent
 
 @router.post("/{agent_id}/assign-prompt/{prompt_id}", response_model=schemas.Agent)
-def assign_prompt_to_agent_endpoint(agent_id: str, prompt_id: int, db: Session = Depends(get_db)):
+def assign_prompt_to_agent_endpoint(agent_id: str, prompt_id: str, db: Session = Depends(get_db)):
     """
     Assign an existing prompt to a specific agent.
     """

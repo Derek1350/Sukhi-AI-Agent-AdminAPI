@@ -82,7 +82,7 @@ def delete_agent(db: Session, agent_id: str):
 # Prompt CRUD Functions (No changes)
 # ==================================
 
-def get_prompt(db: Session, prompt_id: int):
+def get_prompt(db: Session, prompt_id: str):
     """Fetches a single prompt by its ID."""
     return db.query(models.Prompt).filter(models.Prompt.id == prompt_id).first()
 
@@ -121,7 +121,7 @@ def delete_prompt(db: Session, prompt_id: int):
 # Prompt Assignment Functions (Updated for Agents)
 # ==================================
 
-def assign_prompt_to_agent(db: Session, agent_id: str, prompt_id: int):
+def assign_prompt_to_agent(db: Session, agent_id: str, prompt_id: str):
     """Assigns an existing prompt to a specific agent."""
     agent = get_agent(db, agent_id)
     prompt_to_assign = get_prompt(db, prompt_id)
