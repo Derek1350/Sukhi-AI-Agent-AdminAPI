@@ -118,6 +118,16 @@ def assign_prompt_to_agent_endpoint(agent_id: str, prompt_id: int, db: Session =
         
     return crud.assign_prompt_to_agent(db, agent_id=agent_id, prompt_id=prompt_id)
 
+@router.get("/{agent_id}/unassigned-prompts", response_model=List[schemas.Prompt])
+def read_unassigned_prompts(agent_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieve a list of prompts that are not assigned to this agent.
+    """
+    unassigned = crud.get_unassigned_prompts_for_agent(db, agent_id=agent_id)
+    if unassigned is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return unassigned
+
 @router.delete("/{agent_id}/remove-prompt/{prompt_id}", response_model=schemas.Agent)
 def remove_prompt_from_agent_endpoint(agent_id: str, prompt_id: int, db: Session = Depends(get_db)):
     """
