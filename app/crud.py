@@ -19,6 +19,27 @@ def create_admin(db: Session, admin: schemas.AdminCreate):
     return db_admin
 
 # ==================================
+# Sukhi Profile CRUD Functions (New)
+# ==================================
+def get_sukhi_profile(db: Session):
+    profile = db.query(models.SukhiProfile).filter(models.SukhiProfile.id == 1).first()
+    if not profile:
+        profile = models.SukhiProfile(id=1, name="Sukhi")
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+    return profile
+
+def update_sukhi_profile(db: Session, profile_update: schemas.SukhiProfileUpdate):
+    profile = get_sukhi_profile(db)
+    update_data = profile_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(profile, key, value)
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+# ==================================
 # Agent CRUD Functions (Replaces Sukhi functions)
 # ==================================
 
@@ -121,4 +142,18 @@ def remove_prompt_from_agent(db: Session, agent_id: str, prompt_id: int):
         db.commit()
         db.refresh(agent)
     return agent
+
+def get_unassigned_prompts_for_agent(db: Session, agent_id: str):
+    """
+    Gets all prompts that are not currently assigned to the specified agent.
+    """
+    agent = get_agent(db, agent_id)
+    if not agent:
+        return None # Agent not found
+    
+    all_prompts = get_prompts(db, limit=1000) # Assuming a reasonable limit
+    assigned_prompt_ids = {p.id for p in agent.prompts}
+    
+    unassigned_prompts = [p for p in all_prompts if p.id not in assigned_prompt_ids]
+    return unassigned_prompts
 

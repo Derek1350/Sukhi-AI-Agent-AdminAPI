@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Constants for JWT configuration
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 # The token will be valid for 60 minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440 # The token will be valid for 60 minutes
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Compares a plain-text password with its hashed version."""

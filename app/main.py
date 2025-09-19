@@ -3,22 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine
 from . import models
-# Updated import: agents is now included, sukhi is removed
-from .routers import auth, prompts, agents
+from .routers import auth, prompts, agents, sukhi_profile # Import the new router
 
 # This command creates/updates all database tables defined in models.py
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Sukhi Multi-Agent Admin Backend",
-    description="API for managing multiple AI Agents, their profiles, and their prompts.",
-    version="2.0.0", # Version updated to reflect major refactor
+    description="API for managing the global Sukhi Profile and multiple AI Agents.",
+    version="3.0.0", # Version updated for new features
 )
 
-# CORS (Cross-Origin Resource Sharing) Middleware
-origins = [
-    "*", # For development, allow all origins.
-]
+# CORS Middleware
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,10 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the API routers from the other files
+# Include all the API routers
 app.include_router(auth.router)
+app.include_router(sukhi_profile.router)
+app.include_router(agents.router)
 app.include_router(prompts.router)
-app.include_router(agents.router) # <-- Using the new agents router
 
 @app.get("/", tags=["Root"])
 def read_root():
